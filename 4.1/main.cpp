@@ -35,7 +35,8 @@ int main()
 		{
 			cout << "YES";
 			system("pause");
-			return;
+			return 0
+				;
 		}
 	}
 	cout << "NO";
