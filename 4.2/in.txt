@@ -1,0 +1,7 @@
+if;
+/*
+define float variable
+*/
+float ab8 =9.87;
+26<=if10; //hello
+qwerty < aif;
