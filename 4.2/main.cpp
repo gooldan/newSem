@@ -22,6 +22,12 @@ enum states{
 	mscommentary,
 	sscommentary,
 	error,
+	IDerror,
+	ASSerror,
+	NUMerror,
+	CHARerror,
+	ssCOMMerror,
+	msCOMMerror,
 	stop,
 	start
 };
@@ -46,7 +52,7 @@ states getState(states state, char symb, char lastsymb)
 			return commentary;
 		if (symb == ';' || symb == ' ' || symb == '\n')
 			return separator;
-		return error;
+		return CHARerror;
 
 	case floatt:
 		if (((symb == 'l') && (lastsymb == 'f')) || ((symb == 'o') && (lastsymb == 'l')) || ((symb == 'a') && (lastsymb == 'o')) || ((symb == 't') && (lastsymb == 'a')))
@@ -55,7 +61,7 @@ states getState(states state, char symb, char lastsymb)
 			return stop;
 		if ((symb >= 'a' && symb <= 'z') || (symb >= '0' && symb <= '9'))
 			return id;
-		return error;
+		return IDerror;
 	case iff:
 		if ((symb == 'f') && (lastsymb == 'i'))
 			return iff;
@@ -63,13 +69,13 @@ states getState(states state, char symb, char lastsymb)
 			return stop;
 		if ((symb >= 'a' && symb <= 'z') || (symb >= '0' && symb <= '9'))
 			return id;
-		return error;
+		return IDerror;
 	case id:
 		if (separators.find(symb) != -1)
 			return stop;
 		if ((symb >= 'a' && symb <= 'z') || (symb >= '0' && symb <= '9'))
 			return id;
-		return error;
+		return IDerror;
 	case number:
 		if (symb == '.')
 			return fnumber;
@@ -77,14 +83,14 @@ states getState(states state, char symb, char lastsymb)
 			return stop;
 		if (symb >= '0' && symb <= '9')
 			return number;
-		return error;
+		return NUMerror;
 	case fnumber:
 		if (separators.find(symb) != -1)
 		if (lastsymb != '.')
 			return stop;
 		if (symb >= '0' && symb <= '9')
 			return fnumber;
-		return error;
+		return NUMerror;
 	case relation:
 		if (symb == '=')
 			return relation;
@@ -211,7 +217,7 @@ vector<pair<string, string>> analyzer(string str)
 			switch (state)
 			{
 			case mscommentary:
-				while (state != stop && state != error)
+				while (state != stop && state != msCOMMerror)
 				{
 					symb = str[++i];
 					while (symb != '*' && i < str.size())
@@ -227,11 +233,11 @@ vector<pair<string, string>> analyzer(string str)
 						state = stop;
 					}
 					else;
-					else state = error;
+					else state = msCOMMerror;
 				}
 				break;
 			case sscommentary:
-				while (state != stop && state != error)
+				while (state != stop && state != ssCOMMerror)
 				{
 					symb = str[++i];
 					while (symb != '\n' && i < str.size())
@@ -240,10 +246,15 @@ vector<pair<string, string>> analyzer(string str)
 
 					}
 					if (i == str.size())
-						state = error;
+						state = ssCOMMerror;
 					state = stop;
 					line++;
 				}
+				break;
+
+			default:
+				state = CHARerror;
+				symb = '/';
 				break;
 			}
 			break;
@@ -254,9 +265,35 @@ vector<pair<string, string>> analyzer(string str)
 			state = start;
 			lexem.clear();
 		}
-		if (state == error)
+		if (state == IDerror)
 		{
-			res[0] = make_pair(error, to_string(line));
+			string ss;
+			ss += symb;
+			res[0] = make_pair("Unexpected symbol in ID: " + ss + "\n --- Line ", to_string(line));
+			break;
+		}
+		if (state == NUMerror)
+		{
+			string ss;
+			ss += symb;
+			res[0] = make_pair("Unexpected symbol in number: " + ss + "\n --- Line ", to_string(line));
+			break;
+		}
+		if (state == CHARerror)
+		{
+			string ss;
+			ss += symb;
+			res[0] = make_pair("Unexpected symbol: " + ss + "\n --- Line ", to_string(line));
+			break;
+		}
+		if (state == states::ssCOMMerror)
+		{
+			res[0] = make_pair("There is an incomplete commentary: \n --- Line ", to_string(line));
+			break;
+		}
+		if (state == states::msCOMMerror)
+		{
+			res[0] = make_pair("There is an incomplete commentary: \n --- Line ", to_string(line));
 			break;
 		}
 		i++;
@@ -277,8 +314,8 @@ int main()
 	vector<pair<string, string>> res = analyzer(s);
 	if (res[0].first == "nice")
 	for (int i = 1; i < res.size(); ++i)
-		cout << res[i].first << " " << res[i].second<<endl;
+		cout << res[i].first << " " << res[i].second << endl;
 	else
-		cout << "An error occurred in line number " << res[0].second << ".";
+		cout << "ERROR:\n " << res[0].first << res[0].second;
 	cin >> s;
 }
