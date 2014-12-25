@@ -9,6 +9,6 @@ namespace kunh{
 	__declspec(dllexport)	int max(int a, int b);
 	__declspec(dllexport)	int min(int a, int b);
 	__declspec(dllexport)	bool dfs(int v);
-	__declspec(dllexport)	std::vector<int> kunh(std::vector< std::vector <int> > &mat, int m, int n);
+	__declspec(dllexport)	std::vector<int> kunh(std::vector< std::vector <int> > &mat, int m, int n, bool spisoksmejnihvershin=1);
 
 }
