@@ -208,6 +208,7 @@ vector<pair<string, string>> analyzer(string str)
 				break;
 			case stop:
 				res.push_back(make_pair("<", "relation"));
+				i--;
 				break;
 			}
 			break;

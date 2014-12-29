@@ -12,7 +12,7 @@ struct edge
 
 const int MAXN = 100;
 vector<edge> g[MAXN];
-bool used[MAXN];
+bool used[MAXN], check[MAXN][MAXN][2] = { false, false };
 int timer, tin[MAXN], fup[MAXN];
 vector<pair<int, int>> answer;
 int min(int a, int b)
@@ -24,27 +24,31 @@ void dfs(int v, int p = -1)
 {
 	used[v] = true;
 	tin[v] = fup[v] = timer++;
-	for (size_t i = 0; i<g[v].size(); ++i)
+	for (int i = 0; i < g[v].size(); ++i)
 	{
 		int to = g[v][i].target;
-		if (to == p)  continue;
-		if (used[to])
-			fup[v] = min(fup[v], tin[to]);
+		if (to != p)
+		{
+			if (used[to])
+				fup[v] = min(fup[v], tin[to]);
+			else
+			{
+				dfs(to, v);
+				fup[v] = min(fup[v], fup[to]);
+				if (fup[to] > tin[v] && !check[to][v][1])
+					answer.push_back(make_pair(v, to));
+			}
+		}
 		else
 		{
-			dfs(to, v);
-			fup[v] = min(fup[v], fup[to]);
-			if (fup[to] > tin[v])
-			if (g[v][i].k == 1)
-				answer.push_back(make_pair(v, to));
+			if (check[v][to][0])
+				check[v][to][1] = true;
+			else
+				check[v][to][0] = true;
 		}
 	}
 }
 
-void find_bridges()
-{
-
-}
 
 int main()
 {
@@ -57,12 +61,6 @@ int main()
 		for (int j = 0; j < m; ++j)
 		{
 			cin >> t;
-			for (int p = 0; p < g[i].size(); ++p)
-			if (g[i][p].target == t)
-			{
-				g[i][p].k++;
-				continue;
-			}
 			g[i].push_back(edge(t, 1));
 		}
 	}
@@ -74,7 +72,7 @@ int main()
 		dfs(i);
 	cout << answer.size() << endl;
 	for (int i = 0; i < answer.size(); ++i)
-		cout << answer[i].first << " " << answer[i].second<<endl;
+		cout << answer[i].first << " " << answer[i].second << endl;
 
 	cin >> n;
 }
